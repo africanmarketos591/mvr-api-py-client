@@ -1,4 +1,4 @@
-# 🇦🇫 African Market OS — MVR API Python Client
+# African Market OS — MVR API Python Client
 
 Official **Python SDK** for the  
 **Minimum Viable Relationships (MVR) API — v2.6.0-enterprise**
