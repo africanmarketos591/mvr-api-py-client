@@ -1,48 +1,78 @@
 import time
-import requests
 from typing import Optional, Dict, Any
+
+import requests
+
 from .models import (
-    MVRApiConfig, MVRScoreResponse, SurveyAggregateRequest,
-    SurveyAggregateResponse, TrendsResponse, ForecastRequest,
-    ForecastResponse, CompareRequest, CompareResponse,
-    BenchmarkResponse, InsightsResponse, TemperatureResponse,
-    PolicyAuditResponse, StoryResponse, MetaResponse,
-    UsageResponse, WhoAmIResponse, DocsResponse, SessionResponse,
-    HealthResponse, MVRError, AttributionObject
+    AMOSConfig,
+    AMOSScoreRequest,
+    AMOSScoreResponse,
+    HealthResponse,
+    AMOSErrorResponse,
 )
 
 
-class MVRApiError(Exception):
-    """Base exception for MVR API errors."""
-    def __init__(self, error_data: MVRError):
+class AMOSApiError(Exception):
+    """
+    Base exception for AMOS-MVR API errors.
+
+    Wraps the server-side AMOSErrorResponse payload so callers can inspect:
+      - error_data.error
+      - error_data.details
+      - error_data.request_id
+    """
+
+    def __init__(self, error_data: AMOSErrorResponse):
         self.error_data = error_data
-        super().__init__(f"{error_data.error_code}: {error_data.message}")
+        # Best-effort human-readable message
+        msg = getattr(error_data, "error", None) or "AMOS API error"
+        super().__init__(msg)
 
 
-class MVRApiClient:
-    """Main MVR API client using License + Email authentication."""
+class AMOSClient:
+    """
+    Main AMOS-MVR API client using License + Buyer Email authentication.
 
-    def __init__(self, config: MVRApiConfig):
+    Required headers (automatically set):
+      - x-mvr-license
+      - x-buyer-email
+
+    Endpoints implemented:
+      - POST /v1/amos/score  -> score_amos(...)
+      - GET  /health         -> get_health()
+    """
+
+    def __init__(self, config: AMOSConfig):
         self.config = config
 
-        # Persistent session
+        # Persistent HTTP session
         self.session = requests.Session()
-        self.session.headers.update({
-            "x-mvr-license": config.license,
-            "x-buyer-email": config.email,
-            "Content-Type": "application/json",
-            "User-Agent": "mvr-api-py-client/2.6.0"
-        })
+        self.session.headers.update(
+            {
+                "x-mvr-license": config.license_key,
+                "x-buyer-email": config.buyer_email,
+                "Content-Type": "application/json",
+                "User-Agent": "amos-mvr-api-py-client/1.0.0",
+            }
+        )
 
-        self.base_url = config.base_url
-        self.max_retries = config.max_retries
-        self.timeout = config.timeout
+        self.base_url: str = config.base_url
+        self.max_retries: int = config.max_retries
+        self.timeout: float = config.timeout
 
-    # ------------------------------------------------------------
+    # ------------------------------------------------------------------
     # INTERNAL REQUEST WRAPPER
-    # ------------------------------------------------------------
+    # ------------------------------------------------------------------
     def _request(self, method: str, endpoint: str, **kwargs) -> Dict[str, Any]:
-        """Low-level HTTP request with retry + rate limit handling."""
+        """
+        Low-level HTTP request with retry + basic rate-limit handling.
+
+        Returns:
+            Parsed JSON body (dict) on HTTP 200.
+
+        Raises:
+            AMOSApiError for non-200 responses or terminal network failures.
+        """
 
         url = f"{self.base_url}{endpoint}"
 
@@ -52,16 +82,27 @@ class MVRApiClient:
                     method,
                     url,
                     timeout=self.timeout,
-                    **kwargs
+                    **kwargs,
                 )
 
-                data = response.json()
+                # Try to parse JSON; if this fails we still want some context
+                try:
+                    data = response.json()
+                except ValueError:
+                    data = {
+                        "error": f"Non-JSON response from AMOS API (status {response.status_code})",
+                        "details": {"text": response.text},
+                        "request_id": None,
+                    }
 
                 # -------------------------
                 # Successful Response
                 # -------------------------
                 if response.status_code == 200:
-                    return data
+                    if isinstance(data, dict):
+                        return data
+                    # Defensive: some servers may return a list; wrap it
+                    return {"data": data}
 
                 # -------------------------
                 # Rate Limited (429)
@@ -71,274 +112,78 @@ class MVRApiClient:
                     if attempt < self.max_retries:
                         time.sleep(retry_after)
                         continue
-                    raise MVRApiError(MVRError(**data))
 
                 # -------------------------
                 # Other API Errors
                 # -------------------------
-                raise MVRApiError(MVRError(**data))
+                # Best-effort to map server JSON into AMOSErrorResponse
+                if isinstance(data, dict):
+                    try:
+                        error_obj = AMOSErrorResponse(**data)
+                    except TypeError:
+                        # Fallback if shape does not strictly match model
+                        error_obj = AMOSErrorResponse(
+                            error=str(data.get("error", "Unknown AMOS API error")),
+                            details=data.get("details"),
+                            request_id=data.get("request_id"),
+                        )
+                else:
+                    error_obj = AMOSErrorResponse(
+                        error="Unknown AMOS API error",
+                        details={"raw": data},
+                        request_id=None,
+                    )
+
+                raise AMOSApiError(error_obj)
 
             except requests.exceptions.RequestException as e:
                 # Network errors (timeouts, connection drops)
                 if attempt == self.max_retries:
-                    raise MVRApiError(MVRError(
-                        ok=False,
+                    error_obj = AMOSErrorResponse(
                         error="NETWORK_ERROR",
-                        error_code="NETWORK_ERROR",
-                        message=str(e),
-                        attribution=AttributionObject(
-                            framework="Minimum Viable Relationships (MVR)",
-                            creator="Farouk Mark Mukiibi",
-                            source="African Market OS",
-                            license="CC BY 4.0 | Commercial Use Licensed",
-                            doi="10.5281/zenodo.17310446"
-                        )
-                    ))
-                time.sleep(2 ** attempt)  # exponential retry
+                        details={"exception": str(e)},
+                        request_id=None,
+                    )
+                    raise AMOSApiError(error_obj)
 
-    # ------------------------------------------------------------
-    # SCORES + SURVEY
-    # ------------------------------------------------------------
-    def get_scores(self, sector: Optional[str] = None) -> MVRScoreResponse:
-        """GET /v1/scores"""
-        params: Dict[str, Any] = {}
-        if sector:
-            params["sector"] = sector
+                # Simple exponential backoff
+                time.sleep(2 ** attempt)
 
-        data = self._request("GET", "/v1/scores", params=params)
-        return MVRScoreResponse(**data)
-
-    def survey_aggregate(self, request: SurveyAggregateRequest) -> SurveyAggregateResponse:
-        """POST /v1/survey-aggregate"""
-        data = self._request("POST", "/v1/survey-aggregate", json=request.dict())
-        return SurveyAggregateResponse(**data)
-
-    # ------------------------------------------------------------
-    # INTELLIGENCE: TRENDS, FORECAST, COMPARE
-    # ------------------------------------------------------------
-    def get_trends(
-        self,
-        sector: Optional[str] = None,
-        days: Optional[int] = None
-    ) -> TrendsResponse:
-        """GET /v1/trends"""
-        params: Dict[str, Any] = {}
-        if sector:
-            params["sector"] = sector
-        if days is not None:
-            params["days"] = days
-
-        data = self._request("GET", "/v1/trends", params=params)
-        return TrendsResponse(**data)
-
-    def forecast(self, request: ForecastRequest) -> ForecastResponse:
-        """POST /v1/forecast"""
-        data = self._request("POST", "/v1/forecast", json=request.dict())
-        return ForecastResponse(**data)
-
-    def compare(self, request: CompareRequest) -> CompareResponse:
-        """POST /v1/compare"""
-        data = self._request("POST", "/v1/compare", json=request.dict())
-        return CompareResponse(**data)
-
-    # ------------------------------------------------------------
-    # INTELLIGENCE: BENCHMARK, INSIGHTS, TEMPERATURE
-    # ------------------------------------------------------------
-    def get_benchmark(self, sector: Optional[str] = None) -> BenchmarkResponse:
-        """GET /v1/benchmark"""
-        params: Dict[str, Any] = {}
-        if sector:
-            params["sector"] = sector
-
-        data = self._request("GET", "/v1/benchmark", params=params)
-        return BenchmarkResponse(**data)
-
-    def get_insights(self, sector: Optional[str] = None) -> InsightsResponse:
-        """GET /v1/insights"""
-        params: Dict[str, Any] = {}
-        if sector:
-            params["sector"] = sector
-
-        data = self._request("GET", "/v1/insights", params=params)
-        return InsightsResponse(**data)
-
-    def get_temperature(self) -> TemperatureResponse:
-        """GET /v1/temperature"""
-        data = self._request("GET", "/v1/temperature")
-        return TemperatureResponse(**data)
-
-    # ------------------------------------------------------------
-    # INTELLIGENCE: POLICY + STORY
-    # ------------------------------------------------------------
-    def get_policy_multi(self) -> PolicyAuditResponse:
-        """GET /v1/policy_multi"""
-        data = self._request("GET", "/v1/policy_multi")
-        return PolicyAuditResponse(**data)
-
-    def post_policy_multi(self) -> PolicyAuditResponse:
-        """POST /v1/policy_multi"""
-        data = self._request("POST", "/v1/policy_multi")
-        return PolicyAuditResponse(**data)
-
-    def get_story(self) -> StoryResponse:
-        """GET /v1/story"""
-        data = self._request("GET", "/v1/story")
-        return StoryResponse(**data)
-
-    def post_story(self) -> StoryResponse:
-        """POST /v1/story"""
-        data = self._request("POST", "/v1/story")
-        return StoryResponse(**data)
-
-    # ------------------------------------------------------------
-    # UTILITIES
-    # ------------------------------------------------------------
-    def get_meta(self) -> MetaResponse:
-        """GET /v1/meta"""
-        data = self._request("GET", "/v1/meta")
-        return MetaResponse(**data)
-
-    def get_usage(self) -> UsageResponse:
-        """GET /v1/usage"""
-        data = self._request("GET", "/v1/usage")
-        return UsageResponse(**data)
-
-    def whoami(self) -> WhoAmIResponse:
-        """GET /v1/whoami"""
-        data = self._request("GET", "/v1/whoami")
-        return WhoAmIResponse(**data)
-
-    def get_docs(self) -> DocsResponse:
-        """GET /v1/docs"""
-        data = self._request("GET", "/v1/docs")
-        return DocsResponse(**data)
-
-    def create_session(self, license: str, email: str) -> SessionResponse:
-        """POST /v1/session/new"""
-        payload = {"license": license, "email": email}
-        data = self._request("POST", "/v1/session/new", json=payload)
-        return SessionResponse(**data)
-
-    def health(self) -> HealthResponse:
-        """GET /v1/health"""
-        data = self._request("GET", "/v1/health")
-        return HealthResponse(**data)
-
-    # ------------------------------------------------------------
-    # SESSION-BASED CLIENT FACTORY
-    # ------------------------------------------------------------
-    def with_session(self, session_token: str) -> "SessionMVRApiClient":
-        """Return a SessionMVRApiClient using x-mvr-session auth."""
-        return SessionMVRApiClient(
-            base_url=self.base_url,
-            session_token=session_token,
-            timeout=self.timeout
+        # This should be unreachable, but keeps type-checkers happy
+        error_obj = AMOSErrorResponse(
+            error="UNKNOWN_ERROR",
+            details={"reason": "Exhausted retries without response"},
+            request_id=None,
         )
+        raise AMOSApiError(error_obj)
 
+    # ------------------------------------------------------------------
+    # PUBLIC API METHODS
+    # ------------------------------------------------------------------
+    def score_amos(self, request: AMOSScoreRequest) -> AMOSScoreResponse:
+        """
+        POST /v1/amos/score
 
-# ============================================================
-# SESSION-BASED CLIENT (x-mvr-session)
-# ============================================================
-class SessionMVRApiClient:
-    """MVR API client using session-token authentication."""
+        Compute AMOS relational risk, porosity, MVR, and safe credit limits.
 
-    def __init__(self, base_url: str, session_token: str, timeout: int = 30):
-        self.base_url = base_url
-        self.timeout = timeout
-        self.session_token = session_token
+        Args:
+            request: AMOSScoreRequest payload.
 
-        self.session = requests.Session()
-        self.session.headers.update({
-            "x-mvr-session": session_token,
-            "Content-Type": "application/json",
-            "User-Agent": "mvr-api-py-client/2.6.0"
-        })
+        Returns:
+            AMOSScoreResponse
+        """
+        payload = request.dict() if hasattr(request, "dict") else request.__dict__
+        data = self._request("POST", "/v1/amos/score", json=payload)
+        return AMOSScoreResponse(**data)
 
-    def _request(self, method: str, endpoint: str, **kwargs) -> Dict[str, Any]:
-        """Internal request handler"""
-        url = f"{self.base_url}{endpoint}"
+    def get_health(self) -> HealthResponse:
+        """
+        GET /health
 
-        response = self.session.request(method, url, timeout=self.timeout, **kwargs)
-        data = response.json()
+        Lightweight health probe. Returns engine version, wrapper, and timestamp.
 
-        if response.status_code != 200:
-            raise MVRApiError(MVRError(**data))
-
-        return data
-
-    # --------------------------------------------------------
-    # Session-auth GET/POST endpoints
-    # --------------------------------------------------------
-    def get_scores(self, sector: Optional[str] = None) -> MVRScoreResponse:
-        params = {"sector": sector} if sector else {}
-        data = self._request("GET", "/v1/scores", params=params)
-        return MVRScoreResponse(**data)
-
-    def get_trends(self, sector: Optional[str] = None, days: Optional[int] = None) -> TrendsResponse:
-        params = {}
-        if sector:
-            params["sector"] = sector
-        if days:
-            params["days"] = days
-
-        data = self._request("GET", "/v1/trends", params=params)
-        return TrendsResponse(**data)
-
-    def forecast(self, request: ForecastRequest) -> ForecastResponse:
-        data = self._request("POST", "/v1/forecast", json=request.dict())
-        return ForecastResponse(**data)
-
-    def compare(self, request: CompareRequest) -> CompareResponse:
-        data = self._request("POST", "/v1/compare", json=request.dict())
-        return CompareResponse(**data)
-
-    def get_benchmark(self, sector: Optional[str] = None) -> BenchmarkResponse:
-        params = {"sector": sector} if sector else {}
-        data = self._request("GET", "/v1/benchmark", params=params)
-        return BenchmarkResponse(**data)
-
-    def get_insights(self, sector: Optional[str] = None) -> InsightsResponse:
-        params = {"sector": sector} if sector else {}
-        data = self._request("GET", "/v1/insights", params=params)
-        return InsightsResponse(**data)
-
-    def get_temperature(self) -> TemperatureResponse:
-        data = self._request("GET", "/v1/temperature")
-        return TemperatureResponse(**data)
-
-    def get_policy_multi(self) -> PolicyAuditResponse:
-        data = self._request("GET", "/v1/policy_multi")
-        return PolicyAuditResponse(**data)
-
-    def post_policy_multi(self) -> PolicyAuditResponse:
-        data = self._request("POST", "/v1/policy_multi")
-        return PolicyAuditResponse(**data)
-
-    def get_story(self) -> StoryResponse:
-        data = self._request("GET", "/v1/story")
-        return StoryResponse(**data)
-
-    def post_story(self) -> StoryResponse:
-        data = self._request("POST", "/v1/story")
-        return StoryResponse(**data)
-
-    def get_meta(self) -> MetaResponse:
-        data = self._request("GET", "/v1/meta")
-        return MetaResponse(**data)
-
-    def get_usage(self) -> UsageResponse:
-        data = self._request("GET", "/v1/usage")
-        return UsageResponse(**data)
-
-    def whoami(self) -> WhoAmIResponse:
-        data = self._request("GET", "/v1/whoami")
-        return WhoAmIResponse(**data)
-
-    def get_docs(self) -> DocsResponse:
-        data = self._request("GET", "/v1/docs")
-        return DocsResponse(**data)
-
-    def health(self) -> HealthResponse:
-        data = self._request("GET", "/v1/health")
+        Returns:
+            HealthResponse
+        """
+        data = self._request("GET", "/health")
         return HealthResponse(**data)
-
