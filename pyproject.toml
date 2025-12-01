@@ -4,19 +4,30 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mvr-api-client"
-version = "2.6.0"
-description = "Python client for African Market OS — Minimum Viable Relationships (MVR) API"
+version = "1.0.0"
+description = "Python client for African Market OS — AMOS-MVR relational risk & credit API"
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" }
+
 authors = [
   { name = "African Market OS", email = "info@africanmarketos.com" }
 ]
-keywords = ["mvr", "api", "relationships", "african-market", "trust"]
+
+keywords = [
+  "amos",
+  "mvr",
+  "api",
+  "credit",
+  "risk",
+  "african-market",
+  "trade-credit",
+  "fintech"
+]
 
 dependencies = [
   "requests>=2.25.0",
-  "pydantic>=1.8.0"
+  "pydantic>=1.8,<2.0"
 ]
 
 [project.urls]
