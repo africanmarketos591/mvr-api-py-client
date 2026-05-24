@@ -28,7 +28,7 @@ class MVRClient:
                 "Content-Type": "application/json",
                 "X-API-Key": self.config.api_key,
                 "X-Response-Profile": self.config.response_profile,
-                "User-Agent": "mvr-api-py-client/1.1.0",
+                "User-Agent": "mvr-api-py-client/6.32.0",
             }
         )
 
@@ -92,3 +92,4 @@ class MVRClient:
 
 
 MVRApiClient = MVRClient
+
