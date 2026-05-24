@@ -4,36 +4,41 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mvr-api-client"
-version = "1.0.0"
-description = "Python client for African Market OS — AMOS-MVR relational risk & credit API"
+version = "1.1.0"
+description = "Python client for the MVR API relational-readiness layer"
 readme = "README.md"
 requires-python = ">=3.8"
-license = { text = "MIT" }
+license = "MIT"
 
 authors = [
   { name = "African Market OS", email = "info@africanmarketos.com" }
 ]
 
 keywords = [
-  "amos",
   "mvr",
   "api",
-  "credit",
-  "risk",
+  "minimum-viable-relationships",
+  "relational-readiness",
+  "market-permission",
+  "mcp",
+  "openapi",
+  "ai-agents",
   "african-market",
-  "trade-credit",
-  "fintech"
+  "emerging-markets"
 ]
 
 dependencies = [
   "requests>=2.25.0",
-  "pydantic>=1.8,<2.0"
+  "pydantic>=1.8,<3.0"
 ]
 
 [project.urls]
-Homepage = "https://github.com/africanmarketos/mvr-api-py-client"
-Repository = "https://github.com/africanmarketos/mvr-api-py-client"
-Issues = "https://github.com/africanmarketos/mvr-api-py-client/issues"
+Homepage = "https://github.com/africanmarketos591/mvr-api-py-client"
+Repository = "https://github.com/africanmarketos591/mvr-api-py-client"
+Issues = "https://github.com/africanmarketos591/mvr-api-py-client/issues"
+Documentation = "https://africanmarketos.com/AGENTS.md"
+OpenAPI = "https://africanmarketos.com/api/openapi.agent.json"
+MCP = "https://registry.modelcontextprotocol.io/v0/servers?search=io.github.africanmarketos591%2Fmvr-api"
 
 [tool.setuptools.packages.find]
 where = ["."]

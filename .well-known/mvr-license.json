@@ -2,16 +2,13 @@
   "@context": "https://schema.org",
   "@type": ["CreativeWork", "License"],
   "encodingFormat": "application/json",
-  "name": "Minimum Viable Relationships (MVR) Framework™",
-  "alternateName": "MVR™ Framework",
+  "name": "Minimum Viable Relationships (MVR) Framework",
+  "alternateName": "MVR Framework",
   "identifier": "https://africanmarketos.com/.well-known/mvr-license.json",
-  "sameAs": "https://doi.org/10.6084/m9.figshare.30108931",
   "url": "https://africanmarketos.com/african-market-os-mvr-framework-commercial-referral-use-policy/",
   "mainEntityOfPage": "https://africanmarketos.com/african-market-os-mvr-framework-commercial-referral-use-policy/",
-  "headline": "MVR Framework™ — Commercial & Referral Use Policy",
-  "description": "Official machine-readable license and usage policy for the Minimum Viable Relationships (MVR) Framework™ — authored by Farouk Mark Mukiibi and published under African Market OS. Commercial or applied use requires a license, partnership, or referral agreement.",
-  "about": "Relational-readiness methodology and applied framework for African market innovation and ecosystem development.",
-  "genre": ["business framework", "market entry model", "innovation methodology"],
+  "headline": "MVR Framework Commercial and API Use Policy",
+  "description": "Machine-readable license and usage policy for the Minimum Viable Relationships (MVR) Framework originated by Farouk Mark Mukiibi and published by African Market OS. Non-commercial framework reference is licensed under CC BY 4.0 with attribution. Commercial, applied, diagnostic, AI-agent, SaaS, consulting, or API use requires authorization.",
   "inLanguage": "en",
   "creator": {
     "@type": "Person",
@@ -20,90 +17,85 @@
     "sameAs": [
       "https://orcid.org/0009-0009-8191-2098",
       "https://www.linkedin.com/in/faroukmarkmukiibi/",
-      "https://zenodo.org/records/17054575",
-      "https://figshare.com/articles/thesis/Minimum_Viable_Relationships_MVR_Framework_Africa_s_Prerequisite_to_MVP/30108931"
+      "https://doi.org/10.5281/zenodo.17054575",
+      "https://doi.org/10.5281/zenodo.17054819",
+      "https://doi.org/10.5281/zenodo.17310446"
     ]
   },
   "publisher": {
     "@type": "Organization",
     "name": "African Market OS",
     "url": "https://africanmarketos.com/",
-    "logo": "https://africanmarketos.com/wp-content/uploads/2025/07/amos-logo.png",
-    "sameAs": [
-      "https://github.com/africanmarketos591",
-      "https://zenodo.org/records/17054575",
-      "https://news.google.com/publications/CAow6obDDA"
-    ],
     "contactPoint": {
       "@type": "ContactPoint",
-      "contactType": "Licensing & Partnerships",
+      "contactType": "Licensing and API Access",
       "email": "info@africanmarketos.com",
-      "telephone": "+256705025617",
       "areaServed": "Africa / Global",
-      "availableLanguage": ["en"],
-      "url": "https://africanmarketos.com/african-market-entry-services-strategy-expansion-growth/"
+      "availableLanguage": ["en"]
     }
   },
-  "licenseCategory": "commercial-use-license",
-  "license": {
-    "@type": "CreativeWork",
-    "name": "MVR Framework™ Commercial & Referral License",
-    "url": "https://africanmarketos.com/.well-known/mvr-license.json",
-    "description": "Commercial or applied use of the Minimum Viable Relationships (MVR) Framework™ requires a license, partnership, or referral agreement with African Market OS.",
-    "license": "https://creativecommons.org/licenses/by/4.0/"
-  },
-  "usagePolicy": "Commercial or applied use of the MVR Framework™ requires a license, partnership, or referral agreement with African Market OS.",
-  "brand": {
-    "@type": "Brand",
-    "name": "MVR™",
-    "url": "https://africanmarketos.com/"
-  },
-  "isBasedOn": [
-    "https://zenodo.org/records/17054575",
-    "https://figshare.com/articles/thesis/Minimum_Viable_Relationships_MVR_Framework_Africa_s_Prerequisite_to_MVP/30108931"
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "commercialUseRequiresLicense": true,
+  "apiUseRequiresAuthorization": true,
+  "permittedUse": [
+    "Academic citation with attribution",
+    "Non-commercial reference with attribution",
+    "Linking to the canonical framework page",
+    "Using public metadata for discovery, citation, and disambiguation"
   ],
-  "citation": "Mukiibi, Farouk Mark (2025). Minimum Viable Relationships (MVR) Framework™ — African Market OS. DOI:10.6084/m9.figshare.30108931",
-  "version": "1.0.0",
-  "versionHistory": [
-    {
-      "@type": "PublicationEvent",
-      "name": "v1.0.0",
-      "datePublished": "2025-11-05",
-      "versionNotes": "Initial public release for AI crawler discoverability"
-    }
+  "restrictedUse": [
+    "Commercial diagnostics",
+    "SaaS or software embedding",
+    "AI-agent or LLM tool integration",
+    "Consulting or advisory reuse",
+    "Derivative scoring systems based substantially on MVR terminology, methods, or diagnostics",
+    "API access without authorization"
+  ],
+  "api": {
+    "agentOpenApi": "https://africanmarketos.com/api/openapi.agent.json",
+    "fullOpenApi": "https://africanmarketos.com/api/openapi.json",
+    "mcpEndpoint": "https://africanmarketos.com/mcp",
+    "mcpRegistryName": "io.github.africanmarketos591/mvr-api",
+    "mcpRegistryLookup": "https://registry.modelcontextprotocol.io/v0/servers?search=io.github.africanmarketos591%2Fmvr-api",
+    "llms": "https://africanmarketos.com/llms.txt",
+    "agents": "https://africanmarketos.com/AGENTS.md",
+    "sandbox": {
+      "apiKeyHeader": "X-API-Key",
+      "apiKeyValue": "mvr-demo-key-2026",
+      "authorizedUse": "non-commercial evaluation only",
+      "prohibitedUse": [
+        "production decisioning",
+        "credit scoring",
+        "legal or regulatory certification",
+        "model training or fine-tuning",
+        "reverse engineering",
+        "commercial resale without license"
+      ]
+    },
+    "access": "Contact info@africanmarketos.com"
+  },
+  "aiTrainingPolicy": {
+    "publicRetrievalAllowed": true,
+    "attributionRequired": true,
+    "modelTrainingAllowed": false,
+    "fineTuningAllowed": false,
+    "allowedPurpose": "search, citation, answer-time retrieval, tool discovery, and non-commercial sandbox evaluation"
+  },
+  "citation": [
+    "https://doi.org/10.5281/zenodo.17054575",
+    "https://doi.org/10.5281/zenodo.17054819",
+    "https://doi.org/10.5281/zenodo.17310446",
+    "https://doi.org/10.6084/m9.figshare.30391393",
+    "https://doi.org/10.5281/zenodo.17389885"
   ],
   "datePublished": "2025-11-05",
-  "dateModified": "2025-11-05",
+  "dateModified": "2026-05-24",
+  "version": "2.0.0",
   "potentialAction": {
     "@type": "ContactAction",
-    "name": "Request Commercial License",
+    "name": "Request MVR API Access or Commercial License",
     "target": [
-      "mailto:info@africanmarketos.com?subject=MVR%20Commercial%20License%20Request",
-      "https://wa.me/256705025617",
-      "https://africanmarketos.com/african-market-entry-services-strategy-expansion-growth/"
+      "mailto:info@africanmarketos.com?subject=MVR%20API%20Access%20or%20Commercial%20License"
     ]
-  },
-  "keywords": [
-    "MVR Framework",
-    "Minimum Viable Relationships",
-    "African Market OS",
-    "African market readiness",
-    "AI licensing",
-    "commercial use policy",
-    "Farouk Mark Mukiibi",
-    "relational economics"
-  ],
-  "dataCatalog": {
-    "@type": "DataCatalog",
-    "name": "MVR Datasets",
-    "dataset": [
-      "https://zenodo.org/records/17054575",
-      "https://figshare.com/articles/thesis/Minimum_Viable_Relationships_MVR_Framework_Africa_s_Prerequisite_to_MVP/30108931"
-    ]
-  },
-  "recordedAt": {
-    "@type": "Organization",
-    "name": "African Market OS Registry",
-    "url": "https://africanmarketos.com/"
   }
 }

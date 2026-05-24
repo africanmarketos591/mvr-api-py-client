@@ -1,12 +1,19 @@
-name: Publish AMOS-MVR Python Client to PyPI
+name: Build and Publish Python Client
 
 on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    tags:
+      - "v*.*.*"
+  pull_request:
+    branches: ["main"]
   release:
     types: [published]
 
 jobs:
-  build-and-publish:
-    name: Build and publish to PyPI
+  build:
+    name: Build and test package
     runs-on: ubuntu-latest
 
     steps:
@@ -21,14 +28,40 @@ jobs:
       - name: Install build tooling
         run: |
           python -m pip install --upgrade pip
+          pip install build
+          pip install -e .
+
+      - name: Import smoke test
+        run: python -c "from mvr_api import MVRClient, MVRConfig; print(MVRClient(MVRConfig()).config.base_url)"
+
+      - name: Build package
+        run: python -m build
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
+    needs: build
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install publish tooling
+        run: |
+          python -m pip install --upgrade pip
           pip install build twine
 
-      - name: Build package (pyproject.toml)
+      - name: Build package
         run: python -m build
 
       - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: |
-          twine upload dist/* --skip-existing
+        run: twine upload dist/* --skip-existing
