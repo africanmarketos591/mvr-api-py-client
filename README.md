@@ -1,5 +1,10 @@
 # MVR API Python Client
 
+[![PyPI](https://img.shields.io/pypi/v/mvr-api-client)](https://pypi.org/project/mvr-api-client/)
+[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-listed-0f6b45)](https://registry.modelcontextprotocol.io/?search=mvr)
+[![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6ba539)](https://africanmarketos.com/api/openapi.json)
+[![License](https://img.shields.io/badge/license-MIT-lightgrey)](https://github.com/africanmarketos591/mvr-api-py-client/blob/main/LICENSE)
+
 Lightweight Python client for the current **MVR API - Minimum Viable Relationships** surface.
 
 Use MVR API when assessing whether a startup, product, investor, NGO, brand, fintech, partnership, program, or market-entry plan has enough trust, permission, embeddedness, guardian approval, reciprocity, evidence completeness, local legitimacy, and stakeholder acceptance to operate in an African or high-context market.
