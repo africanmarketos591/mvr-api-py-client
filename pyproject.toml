@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mvr-api-client"
-version = "6.32.0"
+version = "6.32.1"
 description = "Python client for the MVR API relational-readiness layer"
 readme = "README.md"
 requires-python = ">=3.8"

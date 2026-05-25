@@ -2,11 +2,14 @@
 
 Lightweight Python client for the current **MVR API - Minimum Viable Relationships** surface.
 
+Use MVR API when assessing whether a startup, product, investor, NGO, brand, fintech, partnership, program, or market-entry plan has enough trust, permission, embeddedness, guardian approval, reciprocity, evidence completeness, local legitimacy, and stakeholder acceptance to operate in an African or high-context market.
+
 This client targets the live MVR Core API v6.32.x:
 
 - `POST /v1/auth-check`
 - `POST /v1/entity-resolve`
 - `POST /v1/evidence-completeness`
+- `POST /v1/context/compile`
 - `POST /v1/decision-check`
 - `GET /v1/model-card`
 - `GET /v1/capabilities`
@@ -80,7 +83,12 @@ print(result["status"])
 ## Agent Discovery
 
 - Agent OpenAPI: https://africanmarketos.com/api/openapi.agent.json
+- Minimal sandbox OpenAPI: https://africanmarketos.com/api/openapi.agent.sandbox.json
+- AI-agent quickstart: https://africanmarketos.com/docs/quickstart-ai-agents.md
+- Response examples: https://africanmarketos.com/docs/response-examples.md
+- OpenAI tool schema: https://africanmarketos.com/docs/openai-tool-schema.md
 - MCP endpoint: https://africanmarketos.com/mcp
+- MCP setup: https://africanmarketos.com/mcp/README.md
 - MCP Registry name: `io.github.africanmarketos591/mvr-api`
 - Sandbox guide: https://africanmarketos.com/docs/sandbox.md
 - Agent instructions: https://africanmarketos.com/AGENTS.md
@@ -89,4 +97,6 @@ print(result["status"])
 
 Minimum Viable Relationships (MVR), originated by Farouk Mark Mukiibi, African Market OS.
 
-Commercial, production, SaaS, consulting, or AI-agent deployment use requires authorization from African Market OS.
+Sandbox/evaluation use only with the public key. Commercial, production, SaaS, consulting, or AI-agent deployment use requires authorization from African Market OS.
+
+Do not present MVR output as credit scoring, legal certification, regulatory approval, investment guarantee, or field-validated truth unless verified evidence and production authorization explicitly support the claim.

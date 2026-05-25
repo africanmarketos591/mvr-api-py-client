@@ -28,7 +28,7 @@ class MVRClient:
                 "Content-Type": "application/json",
                 "X-API-Key": self.config.api_key,
                 "X-Response-Profile": self.config.response_profile,
-                "User-Agent": "mvr-api-py-client/6.32.0",
+                "User-Agent": "mvr-api-py-client/6.32.1",
             }
         )
 
@@ -77,6 +77,9 @@ class MVRClient:
 
     def evidence_completeness(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         return self._request("POST", "/v1/evidence-completeness", payload)
+
+    def context_compile(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        return self._request("POST", "/v1/context/compile", payload)
 
     def decision_check(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         return self._request("POST", "/v1/decision-check", payload)
