@@ -28,7 +28,7 @@ class MVRClient:
                 "Content-Type": "application/json",
                 "X-API-Key": self.config.api_key,
                 "X-Response-Profile": self.config.response_profile,
-                "User-Agent": "mvr-api-py-client/6.32.1",
+                "User-Agent": "mvr-api-py-client/6.32.2",
             }
         )
 
@@ -69,6 +69,10 @@ class MVRClient:
     def auth_check(self) -> Dict[str, Any]:
         return self._request("POST", "/v1/auth-check", {})
 
+    def first_call(self, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Start the bounded MVR workflow; this response is never a verdict."""
+        return self._request("POST", "/v1/first-call", payload or {})
+
     def entity_resolve(self, entity_name: str, country: Optional[str] = None, **extra: Any) -> Dict[str, Any]:
         payload: Dict[str, Any] = {"entity_name": entity_name, **extra}
         if country:
@@ -83,6 +87,12 @@ class MVRClient:
 
     def decision_check(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         return self._request("POST", "/v1/decision-check", payload)
+
+    def recommended_inputs(self, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        return self._request("POST", "/v1/recommended-inputs", payload or {})
+
+    def remediation_path(self, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        return self._request("POST", "/v1/remediation-path", payload or {})
 
     def model_card(self) -> Dict[str, Any]:
         return self._request("GET", "/v1/model-card")

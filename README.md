@@ -12,10 +12,13 @@ Use MVR API when assessing whether a startup, product, investor, NGO, brand, fin
 This client targets the live MVR Core API v6.32.x:
 
 - `POST /v1/auth-check`
+- `POST /v1/first-call`
 - `POST /v1/entity-resolve`
 - `POST /v1/evidence-completeness`
 - `POST /v1/context/compile`
 - `POST /v1/decision-check`
+- `POST /v1/recommended-inputs`
+- `POST /v1/remediation-path`
 - `GET /v1/model-card`
 - `GET /v1/capabilities`
 
@@ -43,6 +46,13 @@ Sandbox use is non-commercial evaluation only. It is `full_advisory`, `client_sa
 from mvr_api import MVRClient
 
 client = MVRClient()
+
+activation = client.first_call({
+    "entity_name": "Example Kampala supplier-finance venture",
+    "country": "UG",
+    "decision": "Assess whether to proceed beyond bounded discovery",
+})
+print(activation["not_a_verdict"])  # True
 
 result = client.entity_resolve("MTN Nigeria", country="NG")
 print(result["response_meta"]["environment"])  # sandbox when using the demo key
@@ -92,7 +102,8 @@ print(result["status"])
 - AI-agent quickstart: https://africanmarketos.com/docs/quickstart-ai-agents.md
 - Response examples: https://africanmarketos.com/docs/response-examples.md
 - OpenAI tool schema: https://africanmarketos.com/docs/openai-tool-schema.md
-- MCP endpoint: https://africanmarketos.com/mcp
+- Canonical public MCP preflight: https://africanmarketos.com/mcp/preflight
+- Compatibility MCP endpoint: https://africanmarketos.com/mcp
 - MCP setup: https://africanmarketos.com/mcp/README.md
 - MCP Registry name: `io.github.africanmarketos591/mvr-api`
 - Sandbox guide: https://africanmarketos.com/docs/sandbox.md
