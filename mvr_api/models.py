@@ -36,10 +36,67 @@ EntityArchetype = Literal[
 MVRVerdict = Literal["permission_not_yet_earned", "pilot_only", "pilot_ready", "ready_to_scale"]
 StringOrStringList = Union[str, List[str]]
 
+EvidenceType = Literal[
+    "public_filing", "survey", "interview", "observation", "telemetry", "admin_data",
+    "evaluation", "retail_audit", "social_listening", "partner_network", "program_monitoring",
+]
+EvidenceOrigin = Literal["public_osint", "field_research", "mixed", "corporate_telemetry", "platform_telemetry"]
+SourceGrade = Literal["A", "B", "C", "D"]
+
+
+class MVRSubject(TypedDict, total=False):
+    entity_name: str
+    name: str
+    country: str
+    entity_archetype: EntityArchetype
+    category: str
+
+
+class MVRMarketScope(TypedDict, total=False):
+    country: str
+    sector: str
+    city: str
+    town_or_zone: str
+    region: str
+    analysis_date: str
+    evaluation_date: str
+
+
+class EvidenceItem(TypedDict, total=False):
+    id: str
+    evidence_type: EvidenceType
+    evidence_origin: EvidenceOrigin
+    source_grade: SourceGrade
+    source_class: str
+    entity_archetype: EntityArchetype
+    stakeholder_class: str
+    collection_method: str
+    freshness_date: str
+    evidence_geography: MVRMarketScope
+    structured_values: Dict[str, float]
+    provenance_ledger: Dict[str, Any]
+    survey_payload: Dict[str, Any]
+    program_payload: Dict[str, Any]
+    admin_data_payload: Dict[str, Any]
+    retail_audit_payload: Dict[str, Any]
+
+
+class CompiledPack(TypedDict, total=False):
+    public_reality_pack: List[EvidenceItem]
+    telemetry_proxy_pack: List[EvidenceItem]
+    localized_observed_pack: List[EvidenceItem]
+    survey_pack: List[EvidenceItem]
+    retail_audit_pack: List[EvidenceItem]
+    ngo_program_pack: List[EvidenceItem]
+    administrative_data_pack: List[EvidenceItem]
+    evaluation_pack: List[EvidenceItem]
+    partner_network_pack: List[EvidenceItem]
+    social_listening_pack: List[EvidenceItem]
+
 
 class FirstCallRequest(TypedDict, total=False):
-    subject: Dict[str, Any]
-    market_scope: Dict[str, Any]
+    subject: MVRSubject
+    market_scope: MVRMarketScope
     entity: str
     entity_name: str
     company_name: str
@@ -49,7 +106,7 @@ class FirstCallRequest(TypedDict, total=False):
     country: str
     sector: str
     industry: str
-    entity_archetype: str
+    entity_archetype: EntityArchetype
     use_case: str
     question: str
     intent: str
@@ -64,8 +121,8 @@ class FirstCallRequest(TypedDict, total=False):
     known_partners: StringOrStringList
     partners: StringOrStringList
     channels: StringOrStringList
-    evidence_pack: List[Dict[str, Any]]
-    evidence_items: List[Dict[str, Any]]
+    evidence_pack: List[EvidenceItem]
+    evidence_items: List[EvidenceItem]
     city: str
     town_or_zone: str
 
@@ -76,7 +133,7 @@ class RecommendedInputsRequest(TypedDict, total=False):
     path: str
     entity_archetype: EntityArchetype
     category: str
-    subject: Dict[str, Any]
+    subject: MVRSubject
     country: str
     goal: str
     evidence_maturity: str
@@ -84,10 +141,10 @@ class RecommendedInputsRequest(TypedDict, total=False):
 
 class RemediationPathRequest(TypedDict, total=False):
     decision_result: Dict[str, Any]
-    subject: Dict[str, Any]
-    market_scope: Dict[str, Any]
-    evidence_pack: List[Dict[str, Any]]
-    compiled_pack: Dict[str, Any]
+    subject: MVRSubject
+    market_scope: MVRMarketScope
+    evidence_pack: List[EvidenceItem]
+    compiled_pack: CompiledPack
     target_verdict: MVRVerdict
     audience: str
     gap_plan: Dict[str, Any]
@@ -98,3 +155,29 @@ class RemediationPathRequest(TypedDict, total=False):
     red_team: Dict[str, Any]
     release_check: Dict[str, Any]
     project_id: str
+
+
+class EvidenceCompletenessRequest(TypedDict, total=False):
+    subject: MVRSubject
+    market_scope: MVRMarketScope
+    evidence_pack: List[EvidenceItem]
+    compiled_pack: CompiledPack
+    stakeholder_scope: List[str]
+    target_verdict: MVRVerdict
+
+
+class ContextCompileRequest(TypedDict, total=False):
+    subject: MVRSubject
+    market_scope: MVRMarketScope
+    evidence_pack: List[EvidenceItem]
+    compiled_pack: CompiledPack
+    analysis_date: str
+    requested_use: str
+
+
+class DecisionCheckRequest(TypedDict, total=False):
+    mode: Literal["exploratory", "evidence_backed", "compiled_evidence"]
+    subject: MVRSubject
+    market_scope: MVRMarketScope
+    evidence_pack: List[EvidenceItem]
+    compiled_pack: CompiledPack

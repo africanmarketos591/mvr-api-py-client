@@ -1,11 +1,19 @@
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Mapping, Optional
 
 import requests
 
-from .models import FirstCallRequest, MVRConfig, RecommendedInputsRequest, RemediationPathRequest
+from .models import (
+    ContextCompileRequest,
+    DecisionCheckRequest,
+    EvidenceCompletenessRequest,
+    FirstCallRequest,
+    MVRConfig,
+    RecommendedInputsRequest,
+    RemediationPathRequest,
+)
 
 
 class MVRApiError(Exception):
@@ -32,7 +40,7 @@ class MVRClient:
             }
         )
 
-    def _request(self, method: str, endpoint: str, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def _request(self, method: str, endpoint: str, payload: Optional[Mapping[str, Any]] = None) -> Dict[str, Any]:
         url = f"{self.config.base_url.rstrip('/')}{endpoint}"
 
         for attempt in range(self.config.max_retries + 1):
@@ -79,13 +87,13 @@ class MVRClient:
             payload["country"] = country
         return self._request("POST", "/v1/entity-resolve", payload)
 
-    def evidence_completeness(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def evidence_completeness(self, payload: EvidenceCompletenessRequest) -> Dict[str, Any]:
         return self._request("POST", "/v1/evidence-completeness", payload)
 
-    def context_compile(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def context_compile(self, payload: ContextCompileRequest) -> Dict[str, Any]:
         return self._request("POST", "/v1/context/compile", payload)
 
-    def decision_check(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def decision_check(self, payload: DecisionCheckRequest) -> Dict[str, Any]:
         return self._request("POST", "/v1/decision-check", payload)
 
     def recommended_inputs(self, payload: Optional[RecommendedInputsRequest] = None) -> Dict[str, Any]:

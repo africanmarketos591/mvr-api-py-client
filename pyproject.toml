@@ -32,6 +32,12 @@ dependencies = [
   "pydantic>=1.8,<3.0"
 ]
 
+[project.optional-dependencies]
+dev = [
+  "build>=1.2.0",
+  "mypy>=1.11.0,<1.18"
+]
+
 [project.urls]
 Homepage = "https://github.com/africanmarketos591/mvr-api-py-client"
 Repository = "https://github.com/africanmarketos591/mvr-api-py-client"
@@ -43,4 +49,8 @@ MCP = "https://registry.modelcontextprotocol.io/v0/servers?search=io.github.afri
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["mvr_api*"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_unused_ignores = true
 

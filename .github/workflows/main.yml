@@ -28,14 +28,16 @@ jobs:
       - name: Install build tooling
         run: |
           python -m pip install --upgrade pip
-          pip install build
-          pip install -e .
+          pip install -e ".[dev]"
 
       - name: Import smoke test
         run: python -c "from mvr_api import MVRClient, MVRConfig; print(MVRClient(MVRConfig()).config.base_url)"
 
       - name: Run client regression tests
         run: python -m unittest discover -s tests -v
+
+      - name: Validate typed request contracts
+        run: python -m mypy tests/typecheck_contract.py
 
       - name: Build package
         run: python -m build
