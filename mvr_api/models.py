@@ -196,8 +196,7 @@ def define_evidence_item(item: Mapping[str, Any]) -> EvidenceItem:
 
     result = dict(item)
     for field, allowed in _EVIDENCE_ENUMS.items():
-        value = result.get(field)
-        if value is not None and value not in allowed:
+        if field in result and result[field] not in allowed:
             raise ValueError(f"{field} must be one of: {', '.join(sorted(allowed))}")
 
     privacy = result.get("privacy_envelope")
@@ -205,16 +204,14 @@ def define_evidence_item(item: Mapping[str, Any]) -> EvidenceItem:
         if not isinstance(privacy, Mapping):
             raise ValueError("privacy_envelope must be a mapping")
         for field, allowed in _PRIVACY_ENUMS.items():
-            value = privacy.get(field)
-            if value is not None and value not in allowed:
+            if field in privacy and privacy[field] not in allowed:
                 raise ValueError(f"privacy_envelope.{field} must be one of: {', '.join(sorted(allowed))}")
 
     provenance = result.get("provenance_ledger")
     if provenance is not None:
         if not isinstance(provenance, Mapping):
             raise ValueError("provenance_ledger must be a mapping")
-        method = provenance.get("extraction_method")
-        if method is not None and method not in _PROVENANCE_METHODS:
+        if "extraction_method" in provenance and provenance["extraction_method"] not in _PROVENANCE_METHODS:
             raise ValueError("provenance_ledger.extraction_method must use the published extraction-method enum")
 
     artifacts = result.get("source_artifacts")
@@ -224,8 +221,7 @@ def define_evidence_item(item: Mapping[str, Any]) -> EvidenceItem:
         for index, artifact in enumerate(artifacts):
             if not isinstance(artifact, Mapping):
                 raise ValueError(f"source_artifacts[{index}] must be a mapping")
-            method = artifact.get("extraction_method")
-            if method is not None and method not in _PROVENANCE_METHODS:
+            if "extraction_method" in artifact and artifact["extraction_method"] not in _PROVENANCE_METHODS:
                 raise ValueError(f"source_artifacts[{index}].extraction_method must use the published extraction-method enum")
 
     return cast(EvidenceItem, result)

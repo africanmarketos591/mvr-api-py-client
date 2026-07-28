@@ -65,6 +65,10 @@ class ClientContractTests(unittest.TestCase):
             define_evidence_item({"provenance_ledger": {"extraction_method": "human_verified"}})
         with self.assertRaisesRegex(ValueError, r"source_artifacts\[0\].extraction_method"):
             define_evidence_item({"source_artifacts": [{"extraction_method": "ocr_magic"}]})
+        with self.assertRaisesRegex(ValueError, "evidence_type"):
+            define_evidence_item({"evidence_type": None})
+        with self.assertRaisesRegex(ValueError, "privacy_envelope.consent_basis"):
+            define_evidence_item({"privacy_envelope": {"consent_basis": None}})
 
 
 if __name__ == "__main__":
