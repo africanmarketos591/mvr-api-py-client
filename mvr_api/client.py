@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional
 
 import requests
 
-from .models import MVRConfig
+from .models import FirstCallRequest, MVRConfig, RecommendedInputsRequest, RemediationPathRequest
 
 
 class MVRApiError(Exception):
@@ -28,7 +28,7 @@ class MVRClient:
                 "Content-Type": "application/json",
                 "X-API-Key": self.config.api_key,
                 "X-Response-Profile": self.config.response_profile,
-                "User-Agent": "mvr-api-py-client/6.32.2",
+                "User-Agent": "mvr-api-py-client/6.32.3",
             }
         )
 
@@ -69,7 +69,7 @@ class MVRClient:
     def auth_check(self) -> Dict[str, Any]:
         return self._request("POST", "/v1/auth-check", {})
 
-    def first_call(self, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def first_call(self, payload: Optional[FirstCallRequest] = None) -> Dict[str, Any]:
         """Start the bounded MVR workflow; this response is never a verdict."""
         return self._request("POST", "/v1/first-call", payload or {})
 
@@ -88,10 +88,10 @@ class MVRClient:
     def decision_check(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         return self._request("POST", "/v1/decision-check", payload)
 
-    def recommended_inputs(self, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def recommended_inputs(self, payload: Optional[RecommendedInputsRequest] = None) -> Dict[str, Any]:
         return self._request("POST", "/v1/recommended-inputs", payload or {})
 
-    def remediation_path(self, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def remediation_path(self, payload: Optional[RemediationPathRequest] = None) -> Dict[str, Any]:
         return self._request("POST", "/v1/remediation-path", payload or {})
 
     def model_card(self) -> Dict[str, Any]:
