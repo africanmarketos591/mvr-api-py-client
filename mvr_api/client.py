@@ -1,11 +1,19 @@
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Mapping, Optional
 
 import requests
 
-from .models import MVRConfig
+from .models import (
+    ContextCompileRequest,
+    DecisionCheckRequest,
+    EvidenceCompletenessRequest,
+    FirstCallRequest,
+    MVRConfig,
+    RecommendedInputsRequest,
+    RemediationPathRequest,
+)
 
 
 class MVRApiError(Exception):
@@ -28,11 +36,11 @@ class MVRClient:
                 "Content-Type": "application/json",
                 "X-API-Key": self.config.api_key,
                 "X-Response-Profile": self.config.response_profile,
-                "User-Agent": "mvr-api-py-client/6.32.1",
+                "User-Agent": "mvr-api-py-client/6.32.3",
             }
         )
 
-    def _request(self, method: str, endpoint: str, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def _request(self, method: str, endpoint: str, payload: Optional[Mapping[str, Any]] = None) -> Dict[str, Any]:
         url = f"{self.config.base_url.rstrip('/')}{endpoint}"
 
         for attempt in range(self.config.max_retries + 1):
@@ -69,20 +77,30 @@ class MVRClient:
     def auth_check(self) -> Dict[str, Any]:
         return self._request("POST", "/v1/auth-check", {})
 
+    def first_call(self, payload: Optional[FirstCallRequest] = None) -> Dict[str, Any]:
+        """Start the bounded MVR workflow; this response is never a verdict."""
+        return self._request("POST", "/v1/first-call", payload or {})
+
     def entity_resolve(self, entity_name: str, country: Optional[str] = None, **extra: Any) -> Dict[str, Any]:
         payload: Dict[str, Any] = {"entity_name": entity_name, **extra}
         if country:
             payload["country"] = country
         return self._request("POST", "/v1/entity-resolve", payload)
 
-    def evidence_completeness(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def evidence_completeness(self, payload: EvidenceCompletenessRequest) -> Dict[str, Any]:
         return self._request("POST", "/v1/evidence-completeness", payload)
 
-    def context_compile(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def context_compile(self, payload: ContextCompileRequest) -> Dict[str, Any]:
         return self._request("POST", "/v1/context/compile", payload)
 
-    def decision_check(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def decision_check(self, payload: DecisionCheckRequest) -> Dict[str, Any]:
         return self._request("POST", "/v1/decision-check", payload)
+
+    def recommended_inputs(self, payload: Optional[RecommendedInputsRequest] = None) -> Dict[str, Any]:
+        return self._request("POST", "/v1/recommended-inputs", payload or {})
+
+    def remediation_path(self, payload: Optional[RemediationPathRequest] = None) -> Dict[str, Any]:
+        return self._request("POST", "/v1/remediation-path", payload or {})
 
     def model_card(self) -> Dict[str, Any]:
         return self._request("GET", "/v1/model-card")
