@@ -58,6 +58,8 @@ result = client.entity_resolve("MTN Nigeria", country="NG")
 print(result["response_meta"]["environment"])  # sandbox when using the demo key
 ```
 
+`first_call` intentionally accepts free-form discovery labels such as `generic_startup`; canonical `EntityArchetype` values become mandatory on `recommended_inputs` and evidence-scoring routes. The published `EvidenceItem` fields and server-enforced evidence enums are exposed through the package's type hints.
+
 ## Evidence Completeness
 
 ```python

@@ -42,6 +42,39 @@ EvidenceType = Literal[
 ]
 EvidenceOrigin = Literal["public_osint", "field_research", "mixed", "corporate_telemetry", "platform_telemetry"]
 SourceGrade = Literal["A", "B", "C", "D"]
+SourceClass = Literal[
+    "entity_reported", "independently_audited", "regulator_published", "administrative_record",
+    "probability_sample_survey", "nonprobability_survey", "structured_field_research",
+    "third_party_evaluation", "retail_audit", "telemetry_internal", "media_reported", "model_inferred",
+]
+StakeholderClass = Literal[
+    "agent", "anchor_customer", "bank_lender", "beneficiary", "board", "board_member", "chama_member",
+    "channel_gatekeeper", "chief", "civil_society_org", "clinic", "community_guardian", "community_leader",
+    "competitor", "competitors", "consumer", "cooperative_member", "court", "courts", "creditor", "creditors",
+    "customary_land_authority", "customer", "customs", "customs_authority", "distributor", "donor",
+    "donor_guardian", "enumerator", "farmer", "field_agent", "field_supervisor", "gatekeeper", "guarantor",
+    "guardian", "guardian_node", "implementing_partner", "incumbent", "incumbent_competitor", "incumbents",
+    "influencer", "informal_logistics", "informal_logistics_partner", "institutional_guardian",
+    "internal_operations", "internal_operator", "investor", "investor_board", "investors", "journalist",
+    "journalists", "judiciary", "judiciary_court", "labor_union", "labour_union", "land_custodian",
+    "land_owner", "landlord", "landowner", "lender", "lender_creditor", "lenders", "market_queen", "media",
+    "media_press", "member", "micro_logistics", "mobile_money_agent", "organized_labour", "platform_partner",
+    "political_guardian", "press", "public_official", "regulator", "regulatory_body", "religious_leader",
+    "research_respondent_group", "retail_partner", "retailer", "retailer_partner", "revenue_authority",
+    "sacco_member", "school", "service_provider", "shareholder", "shareholders", "supplier", "suppliers",
+    "tax_authority", "tax_revenue_authority", "teacher", "traditional_chief", "union", "upstream_supplier",
+    "upstream_vendor", "vc", "vendor", "vendors", "venture_capital", "worker_association", "works_council",
+]
+CollectionMethod = Literal[
+    "structured_interview_protocol", "expert_ethnographic_observation", "field_observation",
+    "survey_platform_verified", "survey_paper_based", "key_informant_interview", "team_consensus_estimate",
+    "founder_intuition", "inferred_from_secondary", "direct", "inferred", "secondary_source",
+    "corporate_telemetry", "database_aggregation", "expert_opinion", "intercept_interview",
+]
+GuardianTier = Literal["macro_regulator", "meso_community", "micro_street"]
+SourceConfidence = Literal["high", "medium", "low"]
+ReviewStatus = Literal["pending", "approved", "accepted", "verified", "reviewed", "rejected"]
+PublicMetricScope = Literal["entity_scale", "country_scale", "regional_scale", "city_scale", "site_scale"]
 
 
 class MVRSubject(TypedDict, total=False):
@@ -64,21 +97,41 @@ class MVRMarketScope(TypedDict, total=False):
 
 class EvidenceItem(TypedDict, total=False):
     id: str
+    evidence_id: str
     evidence_type: EvidenceType
     evidence_origin: EvidenceOrigin
     source_grade: SourceGrade
-    source_class: str
+    source_class: SourceClass
     entity_archetype: EntityArchetype
-    stakeholder_class: str
-    collection_method: str
+    stakeholder_class: StakeholderClass
+    guardian_tier: GuardianTier
+    collection_method: CollectionMethod
+    source_confidence: SourceConfidence
     freshness_date: str
     evidence_geography: MVRMarketScope
+    geography: MVRMarketScope
+    temporal: Dict[str, Any]
+    public_metric_scope: PublicMetricScope
+    public_metrics: Dict[str, Any]
     structured_values: Dict[str, float]
+    structured_values_scale: str
+    behavioral_values: Dict[str, Any]
+    structured_values_provenance: Dict[str, Any]
+    human_reviewed: bool
+    review_status: ReviewStatus
+    reviewed_by: str
+    reviewed_at: str
+    human_review: Dict[str, Any]
+    organ_attestation: Dict[str, Any]
+    _verifier_attestation: Dict[str, Any]
+    privacy_envelope: Dict[str, Any]
+    uncertainty_envelope: Dict[str, Any]
     provenance_ledger: Dict[str, Any]
     survey_payload: Dict[str, Any]
     program_payload: Dict[str, Any]
     admin_data_payload: Dict[str, Any]
     retail_audit_payload: Dict[str, Any]
+    source_artifacts: List[Dict[str, Any]]
 
 
 class CompiledPack(TypedDict, total=False):
@@ -95,7 +148,7 @@ class CompiledPack(TypedDict, total=False):
 
 
 class FirstCallRequest(TypedDict, total=False):
-    subject: MVRSubject
+    subject: Dict[str, Any]
     market_scope: MVRMarketScope
     entity: str
     entity_name: str
@@ -106,7 +159,7 @@ class FirstCallRequest(TypedDict, total=False):
     country: str
     sector: str
     industry: str
-    entity_archetype: EntityArchetype
+    entity_archetype: str
     use_case: str
     question: str
     intent: str
@@ -121,8 +174,8 @@ class FirstCallRequest(TypedDict, total=False):
     known_partners: StringOrStringList
     partners: StringOrStringList
     channels: StringOrStringList
-    evidence_pack: List[EvidenceItem]
-    evidence_items: List[EvidenceItem]
+    evidence_pack: List[Dict[str, Any]]
+    evidence_items: List[Dict[str, Any]]
     city: str
     town_or_zone: str
 

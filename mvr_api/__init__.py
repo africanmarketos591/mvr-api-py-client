@@ -1,6 +1,7 @@
 from .client import MVRApiClient, MVRApiError, MVRClient
 from .models import (
     CompiledPack,
+    CollectionMethod,
     ContextCompileRequest,
     DecisionCheckRequest,
     EntityArchetype,
@@ -8,15 +9,21 @@ from .models import (
     EvidenceItem,
     EvidenceOrigin,
     EvidenceType,
+    GuardianTier,
     FirstCallRequest,
     MVRConfig,
     MVRMarketScope,
     MVRSubject,
     MVRVerdict,
+    PublicMetricScope,
     RecommendedInputsRequest,
     RemediationPathRequest,
+    ReviewStatus,
     SandboxMarkers,
+    SourceClass,
+    SourceConfidence,
     SourceGrade,
+    StakeholderClass,
 )
 
 __version__ = "6.32.3"
@@ -27,6 +34,7 @@ __all__ = [
     "MVRApiError",
     "MVRConfig",
     "CompiledPack",
+    "CollectionMethod",
     "ContextCompileRequest",
     "DecisionCheckRequest",
     "EntityArchetype",
@@ -34,13 +42,19 @@ __all__ = [
     "EvidenceItem",
     "EvidenceOrigin",
     "EvidenceType",
+    "GuardianTier",
     "FirstCallRequest",
     "MVRMarketScope",
     "MVRSubject",
     "MVRVerdict",
+    "PublicMetricScope",
     "RecommendedInputsRequest",
     "RemediationPathRequest",
+    "ReviewStatus",
     "SandboxMarkers",
+    "SourceClass",
+    "SourceConfidence",
     "SourceGrade",
+    "StakeholderClass",
 ]
 
