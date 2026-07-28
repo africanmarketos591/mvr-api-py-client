@@ -58,7 +58,7 @@ result = client.entity_resolve("MTN Nigeria", country="NG")
 print(result["response_meta"]["environment"])  # sandbox when using the demo key
 ```
 
-`first_call` intentionally accepts free-form discovery labels such as `generic_startup`; canonical `EntityArchetype` values become mandatory on `recommended_inputs` and evidence-scoring routes. The published `EvidenceItem` fields and server-enforced evidence enums are exposed through the package's type hints.
+`first_call` intentionally accepts free-form discovery labels such as `generic_startup`; canonical `EntityArchetype` values become mandatory on `recommended_inputs` and evidence-scoring routes. Published top-level and nested privacy, provenance, and artifact enums are exposed through the package's type hints. Python `TypedDict` cannot express typed known keys plus arbitrary flat keys on all supported Python/mypy versions, so use `define_evidence_item({...})` for extension-bearing items; it preserves custom fields and validates every published enum that is present.
 
 ## Evidence Completeness
 

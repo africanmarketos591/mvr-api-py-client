@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Dict, List, Literal, Optional, TypedDict, Union
+from typing import Any, Dict, List, Literal, Mapping, Optional, TypedDict, Union, cast, get_args
 
 from pydantic import BaseModel, Field
 
@@ -75,6 +75,12 @@ GuardianTier = Literal["macro_regulator", "meso_community", "micro_street"]
 SourceConfidence = Literal["high", "medium", "low"]
 ReviewStatus = Literal["pending", "approved", "accepted", "verified", "reviewed", "rejected"]
 PublicMetricScope = Literal["entity_scale", "country_scale", "regional_scale", "city_scale", "site_scale"]
+ProvenanceExtractionMethod = Literal["human", "deterministic_parser", "llm_inferred", "automated_query"]
+PrivacyConsentBasis = Literal[
+    "consent", "contract", "legitimate_interest", "public_interest", "legal_obligation", "not_applicable",
+]
+PrivacyRetentionClass = Literal["session_only", "30d", "90d", "1y", "7y", "contractual"]
+PrivacyRedactionStatus = Literal["raw", "minimized", "redacted", "aggregated"]
 
 
 class MVRSubject(TypedDict, total=False):
@@ -93,6 +99,36 @@ class MVRMarketScope(TypedDict, total=False):
     region: str
     analysis_date: str
     evaluation_date: str
+
+
+class PrivacyEnvelope(TypedDict, total=False):
+    contains_pii: bool
+    contains_sensitive_personal_data: bool
+    consent_basis: PrivacyConsentBasis
+    retention_class: PrivacyRetentionClass
+    redaction_status: PrivacyRedactionStatus
+    safe_for_modeling: bool
+
+
+class ProvenanceLedger(TypedDict, total=False):
+    source_family: str
+    source_doc_id: str
+    source_locator: str
+    extraction_method: ProvenanceExtractionMethod
+    extraction_confidence: float
+    compiler_stage: str
+    data_integrity: Dict[str, Any]
+
+
+class SourceArtifact(TypedDict, total=False):
+    artifact_id: str
+    media_type: str
+    storage_uri: str
+    sha256: str
+    extraction_method: ProvenanceExtractionMethod
+    extractor_version: str
+    extracted_at: str
+    human_reviewed: bool
 
 
 class EvidenceItem(TypedDict, total=False):
@@ -124,14 +160,75 @@ class EvidenceItem(TypedDict, total=False):
     human_review: Dict[str, Any]
     organ_attestation: Dict[str, Any]
     _verifier_attestation: Dict[str, Any]
-    privacy_envelope: Dict[str, Any]
+    privacy_envelope: PrivacyEnvelope
     uncertainty_envelope: Dict[str, Any]
-    provenance_ledger: Dict[str, Any]
+    provenance_ledger: ProvenanceLedger
     survey_payload: Dict[str, Any]
     program_payload: Dict[str, Any]
     admin_data_payload: Dict[str, Any]
     retail_audit_payload: Dict[str, Any]
-    source_artifacts: List[Dict[str, Any]]
+    source_artifacts: List[SourceArtifact]
+
+
+_EVIDENCE_ENUMS = {
+    "evidence_type": set(get_args(EvidenceType)),
+    "evidence_origin": set(get_args(EvidenceOrigin)),
+    "source_grade": set(get_args(SourceGrade)),
+    "source_class": set(get_args(SourceClass)),
+    "entity_archetype": set(get_args(EntityArchetype)),
+    "stakeholder_class": set(get_args(StakeholderClass)),
+    "guardian_tier": set(get_args(GuardianTier)),
+    "collection_method": set(get_args(CollectionMethod)),
+    "source_confidence": set(get_args(SourceConfidence)),
+    "review_status": set(get_args(ReviewStatus)),
+    "public_metric_scope": set(get_args(PublicMetricScope)),
+}
+_PROVENANCE_METHODS = set(get_args(ProvenanceExtractionMethod))
+_PRIVACY_ENUMS = {
+    "consent_basis": set(get_args(PrivacyConsentBasis)),
+    "retention_class": set(get_args(PrivacyRetentionClass)),
+    "redaction_status": set(get_args(PrivacyRedactionStatus)),
+}
+
+
+def define_evidence_item(item: Mapping[str, Any]) -> EvidenceItem:
+    """Preserve extension fields while validating every published enum present in the item."""
+
+    result = dict(item)
+    for field, allowed in _EVIDENCE_ENUMS.items():
+        value = result.get(field)
+        if value is not None and value not in allowed:
+            raise ValueError(f"{field} must be one of: {', '.join(sorted(allowed))}")
+
+    privacy = result.get("privacy_envelope")
+    if privacy is not None:
+        if not isinstance(privacy, Mapping):
+            raise ValueError("privacy_envelope must be a mapping")
+        for field, allowed in _PRIVACY_ENUMS.items():
+            value = privacy.get(field)
+            if value is not None and value not in allowed:
+                raise ValueError(f"privacy_envelope.{field} must be one of: {', '.join(sorted(allowed))}")
+
+    provenance = result.get("provenance_ledger")
+    if provenance is not None:
+        if not isinstance(provenance, Mapping):
+            raise ValueError("provenance_ledger must be a mapping")
+        method = provenance.get("extraction_method")
+        if method is not None and method not in _PROVENANCE_METHODS:
+            raise ValueError("provenance_ledger.extraction_method must use the published extraction-method enum")
+
+    artifacts = result.get("source_artifacts")
+    if artifacts is not None:
+        if not isinstance(artifacts, list):
+            raise ValueError("source_artifacts must be a list")
+        for index, artifact in enumerate(artifacts):
+            if not isinstance(artifact, Mapping):
+                raise ValueError(f"source_artifacts[{index}] must be a mapping")
+            method = artifact.get("extraction_method")
+            if method is not None and method not in _PROVENANCE_METHODS:
+                raise ValueError(f"source_artifacts[{index}].extraction_method must use the published extraction-method enum")
+
+    return cast(EvidenceItem, result)
 
 
 class CompiledPack(TypedDict, total=False):

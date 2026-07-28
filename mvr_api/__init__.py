@@ -16,6 +16,12 @@ from .models import (
     MVRSubject,
     MVRVerdict,
     PublicMetricScope,
+    PrivacyConsentBasis,
+    PrivacyEnvelope,
+    PrivacyRedactionStatus,
+    PrivacyRetentionClass,
+    ProvenanceExtractionMethod,
+    ProvenanceLedger,
     RecommendedInputsRequest,
     RemediationPathRequest,
     ReviewStatus,
@@ -24,6 +30,8 @@ from .models import (
     SourceConfidence,
     SourceGrade,
     StakeholderClass,
+    SourceArtifact,
+    define_evidence_item,
 )
 
 __version__ = "6.32.3"
@@ -48,6 +56,12 @@ __all__ = [
     "MVRSubject",
     "MVRVerdict",
     "PublicMetricScope",
+    "PrivacyConsentBasis",
+    "PrivacyEnvelope",
+    "PrivacyRedactionStatus",
+    "PrivacyRetentionClass",
+    "ProvenanceExtractionMethod",
+    "ProvenanceLedger",
     "RecommendedInputsRequest",
     "RemediationPathRequest",
     "ReviewStatus",
@@ -56,5 +70,7 @@ __all__ = [
     "SourceConfidence",
     "SourceGrade",
     "StakeholderClass",
+    "SourceArtifact",
+    "define_evidence_item",
 ]
 

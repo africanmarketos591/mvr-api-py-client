@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
 
-from mvr_api import MVRApiError, MVRClient, MVRConfig
+from mvr_api import MVRApiError, MVRClient, MVRConfig, define_evidence_item
 
 
 class ClientContractTests(unittest.TestCase):
@@ -50,6 +50,21 @@ class ClientContractTests(unittest.TestCase):
 
         self.assertEqual(caught.exception.status_code, 422)
         self.assertEqual(caught.exception.error_data["error"], "Utility validation failed")
+
+    def test_extension_helper_preserves_custom_fields_and_rejects_invalid_known_enums(self):
+        item = define_evidence_item({
+            "id": "EV-EXT-1",
+            "evidence_type": "public_filing",
+            "custom_signal": {"registry_match": True},
+        })
+        self.assertEqual(item["custom_signal"], {"registry_match": True})
+
+        with self.assertRaisesRegex(ValueError, "privacy_envelope.consent_basis"):
+            define_evidence_item({"privacy_envelope": {"consent_basis": "assumed"}})
+        with self.assertRaisesRegex(ValueError, "provenance_ledger.extraction_method"):
+            define_evidence_item({"provenance_ledger": {"extraction_method": "human_verified"}})
+        with self.assertRaisesRegex(ValueError, r"source_artifacts\[0\].extraction_method"):
+            define_evidence_item({"source_artifacts": [{"extraction_method": "ocr_magic"}]})
 
 
 if __name__ == "__main__":
