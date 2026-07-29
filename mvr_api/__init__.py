@@ -34,7 +34,7 @@ from .models import (
     define_evidence_item,
 )
 
-__version__ = "6.32.3"
+__version__ = "6.32.4"
 
 __all__ = [
     "MVRClient",

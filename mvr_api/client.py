@@ -36,7 +36,7 @@ class MVRClient:
                 "Content-Type": "application/json",
                 "X-API-Key": self.config.api_key,
                 "X-Response-Profile": self.config.response_profile,
-                "User-Agent": "mvr-api-py-client/6.32.3",
+                "User-Agent": "mvr-api-py-client/6.32.4",
             }
         )
 

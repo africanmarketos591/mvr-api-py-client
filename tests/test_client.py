@@ -37,7 +37,7 @@ class ClientContractTests(unittest.TestCase):
         self.assertEqual(calls[2].kwargs["json"]["target_verdict"], "pilot_only")
         self.assertEqual(self.client.session.headers["X-API-Key"], "test-key")
         self.assertEqual(self.client.session.headers["X-Response-Profile"], "full_advisory")
-        self.assertTrue(self.client.session.headers["User-Agent"].endswith("6.32.3"))
+        self.assertTrue(self.client.session.headers["User-Agent"].endswith("6.32.4"))
 
     def test_structured_http_error_is_preserved(self):
         self.request.return_value = self.response(
