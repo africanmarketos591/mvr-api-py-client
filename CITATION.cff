@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+title: "MVR API Python Client"
+message: "Cite this client together with the Minimum Viable Relationships framework and preserve attribution to Farouk Mark Mukiibi and African Market OS."
+authors:
+  - family-names: Mukiibi
+    given-names: Farouk Mark
+    orcid: "https://orcid.org/0009-0009-8191-2098"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.20417651"
+    description: MVR API DOI
+repository-code: "https://github.com/africanmarketos591/mvr-api-py-client"
+url: "https://africanmarketos.com"
+version: "6.32.4"
+type: software
+license: MIT
+keywords:
+  - Minimum Viable Relationships
+  - MVR API
+  - African Market OS
+  - Python
+  - relational readiness
+  - AI agents
